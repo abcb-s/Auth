@@ -6,6 +6,8 @@ import org.example.auth.domain.user.dto.request.SignupUserRequest;
 import org.example.auth.domain.user.entity.Role;
 import org.example.auth.domain.user.entity.User;
 import org.example.auth.domain.user.repository.UserRepository;
+import org.example.auth.global.jwt.JwtProvider;
+import org.example.auth.global.jwt.dto.TokenResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,6 +18,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtProvider jwtProvider;
 
     @Override
     @Transactional
@@ -35,17 +38,20 @@ public class UserServiceImpl implements UserService {
                 .email(request.email())
                 .role(Role.USER)
                 .build();
+        userRepository.save(user);
     }
 
     @Override
-    public void SignIn(SignInUserRequest request){
+    public TokenResponse SignIn(SignInUserRequest request){
        User user = userRepository.findByUsername(request.username())
                .orElseThrow(() -> new IllegalArgumentException("없는 아이디입니다."));
 
        if(!passwordEncoder.matches(request.password(), user.getPassword())){
            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
        }
+       String AccessToken = jwtProvider.generateAccessToken(request.username());
+       String RefreshToken = jwtProvider.generateRefreshToken(request.username());
 
-
+       return new TokenResponse(AccessToken, RefreshToken);
     }
 }

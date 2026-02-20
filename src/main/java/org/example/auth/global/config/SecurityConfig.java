@@ -25,13 +25,11 @@ public class SecurityConfig implements WebMvcConfigurer {
                 .sessionManagement(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(
                         a -> a.requestMatchers(
-                                "/"
+                                "/sign-in",
+                                "/sign-up"
                         ).permitAll()
                                 .anyRequest().authenticated()
                 );
-//                .addFilterAfter()
-//                .addFilterBefore();
-
         return http.build();
     }
 
